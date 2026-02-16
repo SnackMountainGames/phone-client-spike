@@ -1,0 +1,107 @@
+import { useEffect, useRef, useState } from "react";
+
+const WEBSOCKET_URL =
+    "wss://6dwbd9e1d8.execute-api.us-west-2.amazonaws.com/dev/";
+
+interface ServerMessage {
+    type: string;
+    message?: string;
+    roomCode?: string;
+}
+
+function App() {
+    const socketRef = useRef<WebSocket | null>(null);
+
+    const [connected, setConnected] = useState(false);
+    const [roomCode, setRoomCode] = useState("");
+    const [name, setName] = useState("");
+    const [joined, setJoined] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const socket = new WebSocket(WEBSOCKET_URL);
+        socketRef.current = socket;
+
+        socket.onopen = () => {
+            setConnected(true);
+        };
+
+        socket.onclose = () => {
+            setConnected(false);
+        };
+
+        socket.onmessage = (event) => {
+            const message: ServerMessage = JSON.parse(event.data);
+            console.log("Received:", message);
+
+            if (message.type === "joinedRoom") {
+                setJoined(true);
+                setError(null);
+            }
+
+            if (message.type === "error") {
+                setError(message.message || "Unknown error");
+            }
+        };
+
+        return () => {
+            socket.close();
+        };
+    }, []);
+
+    const joinRoom = () => {
+        if (!socketRef.current || socketRef.current.readyState !== WebSocket.OPEN)
+            return;
+
+        socketRef.current.send(
+            JSON.stringify({
+                action: "joinRoom",
+                roomCode: roomCode.toUpperCase(),
+                name
+            })
+        );
+    };
+
+    return (
+        <div style={{ padding: 30, fontFamily: "sans-serif" }}>
+            <h1>Join Game</h1>
+
+            <p>
+                Status:{" "}
+                <strong style={{ color: connected ? "green" : "red" }}>
+                    {connected ? "Connected" : "Disconnected"}
+                </strong>
+            </p>
+
+            {!joined ? (
+                <>
+                    <input
+                        placeholder="Room Code"
+                        value={roomCode}
+                        onChange={(e) => setRoomCode(e.target.value)}
+                        style={{ display: "block", marginBottom: 10 }}
+                    />
+
+                    <input
+                        placeholder="Your Name"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        style={{ display: "block", marginBottom: 10 }}
+                    />
+
+                    <button onClick={joinRoom} disabled={!connected}>
+                        Join Room
+                    </button>
+
+                    {error && (
+                        <p style={{ color: "red", marginTop: 10 }}>{error}</p>
+                    )}
+                </>
+            ) : (
+                <h2>Successfully joined room {roomCode.toUpperCase()} 🎉</h2>
+            )}
+        </div>
+    );
+}
+
+export default App;
