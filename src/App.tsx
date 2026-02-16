@@ -11,6 +11,7 @@ interface ServerMessage {
 
 function App() {
     const socketRef = useRef<WebSocket | null>(null);
+    const heartbeatRef = useRef<number | null>(null);
 
     const [connected, setConnected] = useState(false);
     const [roomCode, setRoomCode] = useState("");
@@ -24,15 +25,22 @@ function App() {
 
         socket.onopen = () => {
             setConnected(true);
+            startHeartbeat();
         };
 
         socket.onclose = () => {
             setConnected(false);
+            stopHeartbeat();
         };
 
         socket.onmessage = (event) => {
             const message: ServerMessage = JSON.parse(event.data);
             console.log("Received:", message);
+
+            if (message.type === "heartbeat") {
+                console.log("Pong received");
+                return;
+            }
 
             if (message.type === "joinedRoom") {
                 setJoined(true);
@@ -48,6 +56,29 @@ function App() {
             socket.close();
         };
     }, []);
+
+    const startHeartbeat = () => {
+        stopHeartbeat(); // prevent duplicates
+
+        heartbeatRef.current = window.setInterval(() => {
+            if (socketRef.current?.readyState === WebSocket.OPEN) {
+                console.log("Pinging");
+                socketRef.current.send(
+                    JSON.stringify({
+                        action: "heartbeat",
+                        timestamp: Date.now(),
+                    })
+                );
+            }
+        }, 30000);
+    }
+
+    const stopHeartbeat = () => {
+        if (heartbeatRef.current) {
+            clearInterval(heartbeatRef.current);
+            heartbeatRef.current = null;
+        }
+    }
 
     const joinRoom = () => {
         if (!socketRef.current || socketRef.current.readyState !== WebSocket.OPEN)
