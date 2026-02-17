@@ -47,7 +47,7 @@ export function useWebSocket(onMessage: (data: any) => void) {
     function startHeartbeat() {
         stopHeartbeat();
         heartbeatRef.current = window.setInterval(() => {
-            send({ action: "ping" });
+            send({ action: "heartbeat" });
         }, 30000);
     }
 
@@ -58,5 +58,5 @@ export function useWebSocket(onMessage: (data: any) => void) {
         }
     }
 
-    return { connected, send };
+    return { connected, send, onMessage };
 }

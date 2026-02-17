@@ -1,16 +1,23 @@
-import { useState } from "react";
-import { useWebSocket } from "../network/useWebSocket";
+import { useEffect, useState } from "react";
+import { ConnectionStatus } from "../components/ConnectionStatus.tsx";
+import { useSharedWebSocket } from "../network/WebSocketProvider.tsx";
 
-export default function Phone() {
+export const Phone = () => {
+    const { connected, subscribe, send } = useSharedWebSocket();
+
     const [roomCode, setRoomCode] = useState("");
     const [name, setName] = useState("");
     const [joined, setJoined] = useState(false);
 
-    const { connected, send } = useWebSocket((message) => {
-        if (message.type === "joinedRoom") {
-            setJoined(true);
-        }
-    });
+    useEffect(() => {
+        const unsubscribe = subscribe((message) => {
+            if (message.type === "joinedRoom") {
+                setJoined(true);
+            }
+        });
+
+        return unsubscribe;
+    }, [subscribe]);
 
     function joinRoom() {
         send({
@@ -24,12 +31,21 @@ export default function Phone() {
         <div style={{ padding: 30, fontFamily: "sans-serif" }}>
             <h1>Join Game</h1>
 
-            <p>
-                Status:{" "}
-                <strong style={{ color: connected ? "green" : "red" }}>
-                    {connected ? "Connected" : "Disconnected"}
-                </strong>
-            </p>
+            <ConnectionStatus />
+
+            {/*<p>*/}
+            {/*    Status:&nbsp;*/}
+            {/*    <strong style={{ color: connected ? "green" : "red" }}>*/}
+            {/*        {connected ? "Connected" : "Disconnected"}*/}
+            {/*    </strong>*/}
+            {/*    <span style={{*/}
+            {/*        marginLeft: 8,*/}
+            {/*        opacity: showHeartbeat ? 1 : 0.1,*/}
+            {/*        transition: showHeartbeat ? "opacity 0.1s ease-out" : "opacity 5s ease-out",*/}
+            {/*    }}>*/}
+            {/*        ❤️*/}
+            {/*    </span>*/}
+            {/*</p>*/}
 
             {!joined ? (
                 <>
@@ -52,7 +68,7 @@ export default function Phone() {
                     </button>
                 </>
             ) : (
-                <h2>Successfully joined room {roomCode.toUpperCase()} 🎉</h2>
+                <h2>Successfully joined room {roomCode.toUpperCase()} as {name} 🎉</h2>
             )}
         </div>
     );

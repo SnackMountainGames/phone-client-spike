@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useWebSocket } from "../network/useWebSocket";
 import type { Player, ServerMessage } from "../utilities/types.ts";
 
-export default function Host() {
+export const Host = () => {
     const [roomCode, setRoomCode] = useState<string | null>(null);
     const [players, setPlayers] = useState<Player[]>([]);
     
@@ -34,7 +34,7 @@ export default function Host() {
             <h1>Game Host Console</h1>
 
             <p>
-                Status:{" "}
+                Status:&nbsp;
                 <strong style={{ color: connected ? "green" : "red" }}>
                     {connected ? "Connected" : "Disconnected"}
                 </strong>
