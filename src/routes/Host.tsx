@@ -1,27 +1,39 @@
-import { useState } from "react";
-import { useWebSocket } from "../network/useWebSocket";
+import { useEffect, useState } from "react";
 import type { Player, ServerMessage } from "../utilities/types.ts";
+import { useSharedWebSocket } from "../network/WebSocketProvider.tsx";
+import { ConnectionStatus } from "../components/ConnectionStatus.tsx";
 
 export const Host = () => {
     const [roomCode, setRoomCode] = useState<string | null>(null);
     const [players, setPlayers] = useState<Player[]>([]);
     
-    const { connected, send } = useWebSocket((message: ServerMessage) => {
-        if (message.type === "roomCreated" && message.roomCode) {
-            setRoomCode(message.roomCode);
-        }
+    const { connected, subscribe, send } = useSharedWebSocket();
 
-        if (message.type === "roomData" && message.room) {
-            const playerItems = message.room.filter((item) =>
-                item.SK?.startsWith("PLAYER#")
-            );
-            setPlayers(playerItems);
-        }
+    useEffect(() => {
+        const unsubscribe = subscribe((message: ServerMessage) => {
+            if (message.type === "roomCreated" && message.roomCode) {
+                setRoomCode(message.roomCode);
+            }
 
-        if (message.type === "playerListUpdated") {
-            setPlayers(message.players || []);
-        }
-    });
+            if (message.type === "roomData" && message.room) {
+                const playerItems = message.room.filter((item) =>
+                    item.SK?.startsWith("PLAYER#")
+                );
+                setPlayers(playerItems);
+            }
+
+            if (message.type === "playerListUpdated") {
+                setPlayers(message.players || []);
+            }
+
+            if (message.type === "phoneMessage") {
+                console.log("Message from phone:", message.text);
+                console.log("From:", message.from);
+            }
+        });
+
+        return unsubscribe;
+    }, [subscribe]);
 
     const createRoom = () => {
         send({
@@ -33,12 +45,7 @@ export const Host = () => {
         <div style={{ padding: 40, fontFamily: "sans-serif" }}>
             <h1>Game Host Console</h1>
 
-            <p>
-                Status:&nbsp;
-                <strong style={{ color: connected ? "green" : "red" }}>
-                    {connected ? "Connected" : "Disconnected"}
-                </strong>
-            </p>
+            <ConnectionStatus />
 
             <hr />
 

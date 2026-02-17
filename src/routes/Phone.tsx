@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { ConnectionStatus } from "../components/ConnectionStatus.tsx";
 import { useSharedWebSocket } from "../network/WebSocketProvider.tsx";
+import type { ServerMessage } from "../utilities/types.ts";
 
 export const Phone = () => {
     const { connected, subscribe, send } = useSharedWebSocket();
@@ -10,7 +11,7 @@ export const Phone = () => {
     const [joined, setJoined] = useState(false);
 
     useEffect(() => {
-        const unsubscribe = subscribe((message) => {
+        const unsubscribe = subscribe((message: ServerMessage) => {
             if (message.type === "joinedRoom") {
                 setJoined(true);
             }
@@ -19,7 +20,7 @@ export const Phone = () => {
         return unsubscribe;
     }, [subscribe]);
 
-    function joinRoom() {
+    const joinRoom = () => {
         send({
             action: "joinRoom",
             roomCode,
@@ -27,25 +28,19 @@ export const Phone = () => {
         });
     }
 
+    const sendMessage = (text: string) => {
+        send({
+            action: "sendToHost",
+            text
+        });
+    }
+
+
     return (
         <div style={{ padding: 30, fontFamily: "sans-serif" }}>
             <h1>Join Game</h1>
 
             <ConnectionStatus />
-
-            {/*<p>*/}
-            {/*    Status:&nbsp;*/}
-            {/*    <strong style={{ color: connected ? "green" : "red" }}>*/}
-            {/*        {connected ? "Connected" : "Disconnected"}*/}
-            {/*    </strong>*/}
-            {/*    <span style={{*/}
-            {/*        marginLeft: 8,*/}
-            {/*        opacity: showHeartbeat ? 1 : 0.1,*/}
-            {/*        transition: showHeartbeat ? "opacity 0.1s ease-out" : "opacity 5s ease-out",*/}
-            {/*    }}>*/}
-            {/*        ❤️*/}
-            {/*    </span>*/}
-            {/*</p>*/}
 
             {!joined ? (
                 <>
@@ -68,7 +63,12 @@ export const Phone = () => {
                     </button>
                 </>
             ) : (
-                <h2>Successfully joined room {roomCode.toUpperCase()} as {name} 🎉</h2>
+                <>
+                    <h2>Successfully joined room {roomCode.toUpperCase()} as {name} 🎉</h2>
+                    <button onClick={() => sendMessage("Hello Host!")}>
+                        Send Message
+                    </button>
+                </>
             )}
         </div>
     );

@@ -3,6 +3,8 @@ export interface ServerMessage {
     roomCode?: string;
     room?: any[];
     players?: Player[];
+    text?: string;
+    from?: string;
 }
 
 export interface Player {

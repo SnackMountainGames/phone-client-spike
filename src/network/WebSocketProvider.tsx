@@ -26,12 +26,13 @@ type WebSocketContextType = {
 const WebSocketContext = createContext<WebSocketContextType | null>(null);
 
 // const WEBSOCKET_URL = import.meta.env.VITE_WEBSOCKET_URL;
-const WEBSOCKET_URL ="wss://6dwbd9e1d8.execute-api.us-west-2.amazonaws.com/dev/";
+const WEBSOCKET_URL = "wss://6dwbd9e1d8.execute-api.us-west-2.amazonaws.com/dev/";
 
 export const WebSocketProvider = ({ children }: { children: ReactNode }) => {
     const socketRef = useRef<WebSocket | null>(null);
     const listenersRef = useRef<MessageListener[]>([]);
     const heartbeatRef = useRef<number | null>(null);
+
     const [connected, setConnected] = useState(false);
    
     /**
