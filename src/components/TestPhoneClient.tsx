@@ -1,18 +1,26 @@
-import { useState } from "react";
-import { useWebSocket } from "../network/useWebSocket";
+import { useEffect, useState } from "react";
+import { ConnectionStatus } from "./ConnectionStatus.tsx";
+import { useSharedWebSocket } from "../network/WebSocketProvider.tsx";
+import type { ServerMessage } from "../utilities/types.ts";
 
-export default function Phone() {
+export const TestPhoneClient = () => {
+    const { connected, subscribe, send } = useSharedWebSocket();
+
     const [roomCode, setRoomCode] = useState("");
     const [name, setName] = useState("");
     const [joined, setJoined] = useState(false);
 
-    const { connected, send } = useWebSocket((message) => {
-        if (message.type === "joinedRoom") {
-            setJoined(true);
-        }
-    });
+    useEffect(() => {
+        const unsubscribe = subscribe((message: ServerMessage) => {
+            if (message.type === "joinedRoom") {
+                setJoined(true);
+            }
+        });
 
-    function joinRoom() {
+        return unsubscribe;
+    }, [subscribe]);
+
+    const joinRoom = () => {
         send({
             action: "joinRoom",
             roomCode,
@@ -20,16 +28,19 @@ export default function Phone() {
         });
     }
 
+    const sendMessage = (text: string) => {
+        send({
+            action: "sendToHost",
+            text
+        });
+    }
+
+
     return (
         <div style={{ padding: 30, fontFamily: "sans-serif" }}>
             <h1>Join Game</h1>
 
-            <p>
-                Status:{" "}
-                <strong style={{ color: connected ? "green" : "red" }}>
-                    {connected ? "Connected" : "Disconnected"}
-                </strong>
-            </p>
+            <ConnectionStatus />
 
             {!joined ? (
                 <>
@@ -52,7 +63,12 @@ export default function Phone() {
                     </button>
                 </>
             ) : (
-                <h2>Successfully joined room {roomCode.toUpperCase()} 🎉</h2>
+                <>
+                    <h2>Successfully joined room {roomCode.toUpperCase()} as {name} 🎉</h2>
+                    <button onClick={() => sendMessage("Hello TestHostPage!")}>
+                        Send Message
+                    </button>
+                </>
             )}
         </div>
     );
