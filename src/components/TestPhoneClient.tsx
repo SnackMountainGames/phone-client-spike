@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import { ConnectionStatus } from "../components/ConnectionStatus.tsx";
+import { ConnectionStatus } from "./ConnectionStatus.tsx";
 import { useSharedWebSocket } from "../network/WebSocketProvider.tsx";
 import type { ServerMessage } from "../utilities/types.ts";
 
-export const Phone = () => {
+export const TestPhoneClient = () => {
     const { connected, subscribe, send } = useSharedWebSocket();
 
     const [roomCode, setRoomCode] = useState("");
@@ -65,7 +65,7 @@ export const Phone = () => {
             ) : (
                 <>
                     <h2>Successfully joined room {roomCode.toUpperCase()} as {name} 🎉</h2>
-                    <button onClick={() => sendMessage("Hello Host!")}>
+                    <button onClick={() => sendMessage("Hello TestHostPage!")}>
                         Send Message
                     </button>
                 </>

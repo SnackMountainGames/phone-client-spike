@@ -3,7 +3,7 @@ import type { Player, ServerMessage } from "../utilities/types.ts";
 import { useSharedWebSocket } from "../network/WebSocketProvider.tsx";
 import { ConnectionStatus } from "../components/ConnectionStatus.tsx";
 
-export const Host = () => {
+export const TestHostPage = () => {
     const [roomCode, setRoomCode] = useState<string | null>(null);
     const [players, setPlayers] = useState<Player[]>([]);
     

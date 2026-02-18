@@ -40,3 +40,24 @@
 .read-the-docs {
   color: #888;
 }
+
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  overscroll-behavior: none;
+  box-sizing: border-box;
+}
+
+canvas {
+  display: block;
+  touch-action: none;
+}
+
+input,
+textarea,
+select {
+  font-size: 16px;
+}

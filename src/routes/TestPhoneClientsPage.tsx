@@ -1,8 +1,8 @@
-import { Phone } from "./Phone.tsx";
+import { TestPhoneClient } from "../components/TestPhoneClient.tsx";
 import { useState } from "react";
 import { WebSocketProvider } from "../network/WebSocketProvider.tsx";
 
-export const PhoneClientsPage = () => {
+export const TestPhoneClientsPage = () => {
     const [phoneClientCount, setPhoneClientCount] = useState<number>(0);
 
     return (
@@ -19,7 +19,7 @@ export const PhoneClientsPage = () => {
                 {Array.from({ length: phoneClientCount }, (_, index) => (
                     <div key={index} style={{ border: "1px solid black", padding: 20, marginRight: 20, marginBottom: 20, width: 300, height: 500, boxSizing: "border-box" }}>
                         <WebSocketProvider>
-                            <Phone />
+                            <TestPhoneClient />
                         </WebSocketProvider>
                     </div>
                 ))}
