@@ -91,6 +91,7 @@ export const PhoneClient = () => {
         const y = e.clientY - rect.top;
 
         if (isInsideImage(x, y, canvas)) {
+            navigator?.vibrate(200);
             sendMessage(`${name} says "Moo!"`);
         }
     }, [name, sendMessage]);
