@@ -10,7 +10,6 @@ export const PhoneClient = () => {
     
     const [roomCode, setRoomCode] = useState("");
     const [name, setName] = useState("");
-    // const [joined, setJoined] = useState(false);
     const [joined, setJoined] = useState(false);
 
     useEffect(() => {
@@ -91,7 +90,9 @@ export const PhoneClient = () => {
         const y = e.clientY - rect.top;
 
         if (isInsideImage(x, y, canvas)) {
-            navigator?.vibrate(200);
+            if (navigator && navigator.vibrate) {
+                navigator.vibrate(200);
+            }
             sendMessage(`${name} says "Moo!"`);
         }
     }, [name, sendMessage]);
