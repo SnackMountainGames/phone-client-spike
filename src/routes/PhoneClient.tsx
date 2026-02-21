@@ -3,12 +3,15 @@ import { useSharedWebSocket } from "../network/WebSocketProvider.tsx";
 import type { ServerMessage } from "../utilities/types.ts";
 import { ConnectionStatus } from "../components/ConnectionStatus.tsx";
 import { GameCanvas } from "../components/GameCanvas.tsx";
+import { useGameStore } from "../state/GameState.ts";
 
 export const PhoneClient = () => {
     const { connected, subscribe, send } = useSharedWebSocket();
 
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
-    
+
+    const { score, reset } = useGameStore();
+
     const [roomCode, setRoomCode] = useState("");
     const [name, setName] = useState("");
     const [joined, setJoined] = useState(false);
@@ -128,6 +131,10 @@ export const PhoneClient = () => {
                 <div style={{ position: "absolute", width: "100%", pointerEvents: "none", touchAction: "none", userSelect: "none" }} >
                     <ConnectionStatus />
                     <h3>Successfully joined room {roomCode.toUpperCase()} as {name} 🎉</h3>
+                    <h3>
+                        Score: {score}&nbsp;
+                        <button onClick={reset} style={{ pointerEvents: "all" }}>Reset Score</button>
+                    </h3>
                 </div>
                 <GameCanvas />
             </>

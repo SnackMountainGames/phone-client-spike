@@ -1,7 +1,13 @@
 import { useEffect, useRef, type PointerEvent } from "react";
+import { isInsideBx } from "../game/ImageUtilities.ts";
+import { useGameStore } from "../state/GameState.ts";
+import { useSharedWebSocket } from "../network/WebSocketProvider.tsx";
 
 export const GameCanvas = () => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
+    const { send } = useSharedWebSocket();
+    const { score, increase } = useGameStore();
 
     const gameStateRef = useRef({
         x: 100,
@@ -79,9 +85,21 @@ export const GameCanvas = () => {
         const canvas = canvasRef.current;
         if (!canvas) return;
 
+        const gameState = gameStateRef.current;
+
         const rect = canvas.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
+
+        if (isInsideBx(gameState.x, gameState.y, 50, 50, e)) {
+            increase();
+            if (score + 1 == 10) {
+                send({
+                     action: "sendToHost",
+                     text: "I got 10!"
+                });
+            }
+        }
 
         console.log(x,y, e.pointerType, e.button);
     }
