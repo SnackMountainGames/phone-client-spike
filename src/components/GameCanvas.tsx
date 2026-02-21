@@ -1,5 +1,5 @@
-import { useEffect, useRef, type PointerEvent } from "react";
-import { isInsideBx } from "../game/ImageUtilities.ts";
+import { useEffect, useRef, type PointerEvent, useCallback } from "react";
+import { isInsideBox } from "../game/ImageUtilities.ts";
 import { useGameStore } from "../state/GameState.ts";
 import { useSharedWebSocket } from "../network/WebSocketProvider.tsx";
 
@@ -10,9 +10,16 @@ export const GameCanvas = () => {
     const { score, increase } = useGameStore();
 
     const gameStateRef = useRef({
-        x: 100,
-        y: 100,
-        dy: 200,
+        isPointerDown: false,
+        objects: [{
+            x: 100,
+            y: 100,
+            dy: 200,
+        },{
+            x: 300,
+            y: 100,
+            dy: 200,
+        }]
     });
 
     const resizeCanvas = () => {
@@ -26,12 +33,14 @@ export const GameCanvas = () => {
     const update = (dt: number) => {
         const gameState = gameStateRef.current;
 
-        gameState.y += gameState.dy * dt;
+        gameState.objects.forEach((object, index) => {
+            object.y += object.dy * dt;
 
-        if (gameState.y < 100 || gameState.y > 600) gameState.dy *= -1;
+            if (object.y < 100 || object.y > 600) gameState.objects[index].dy *= -1;
+        });
     }
 
-    const render = (
+    const render = useCallback((
         canvas: HTMLCanvasElement,
         ctx: CanvasRenderingContext2D
     ) => {
@@ -41,15 +50,22 @@ export const GameCanvas = () => {
 
         ctx.lineWidth = 3;
 
-        ctx.strokeStyle = "red";
-        ctx.strokeRect(gameState.x, gameState.y, 50, 50);
+        gameState.objects.forEach((object, index) => {
+            if (gameState.isPointerDown && index == 1) {
+                ctx.fillStyle = "red";
+                ctx.fillRect(object.x, object.y, 50, 50);
+            } else {
+                ctx.strokeStyle = "red";
+                ctx.strokeRect(object.x, object.y, 50, 50);
+            }
 
-        ctx.strokeStyle = "green";
-        ctx.strokeRect(gameState.x, gameState.y, 1, 1);
+            ctx.strokeStyle = "green";
+            ctx.strokeRect(object.x, object.y, 1, 1);
+        });
 
         ctx.strokeStyle = "blue";
         ctx.strokeRect(0, 0, canvas.width, canvas.height);
-    }
+    }, []);
 
     useEffect(() => {
         const canvas = canvasRef.current;
@@ -79,19 +95,16 @@ export const GameCanvas = () => {
             cancelAnimationFrame(animationId);
             window.removeEventListener("resize", resizeCanvas);
         }
-    }, []);
+    }, [render]);
 
     const onPointerDown = (e: PointerEvent<HTMLCanvasElement>) => {
         const canvas = canvasRef.current;
         if (!canvas) return;
 
         const gameState = gameStateRef.current;
+        gameState.isPointerDown = true;
 
-        const rect = canvas.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-
-        if (isInsideBx(gameState.x, gameState.y, 50, 50, e)) {
+        if (isInsideBox(gameState.objects[0].x, gameState.objects[0].y, 50, 50, e)) {
             increase();
             if (score + 1 == 10) {
                 send({
@@ -100,18 +113,22 @@ export const GameCanvas = () => {
                 });
             }
         }
-
-        console.log(x,y, e.pointerType, e.button);
+    }
+    const onPointerUp = () => {
+        const gameState = gameStateRef.current;
+        gameState.isPointerDown = false;
     }
 
     return (
         <canvas
             ref={canvasRef}
             onPointerDown={onPointerDown}
-            onContextMenu={(e) => e.preventDefault()}style={{
-            touchAction: "none",
-            userSelect: "none"
-        }}
+            onPointerUp={onPointerUp}
+            onContextMenu={(e) => e.preventDefault()}
+            style={{
+                touchAction: "none",
+                userSelect: "none"
+            }}
         />
     );
 }
