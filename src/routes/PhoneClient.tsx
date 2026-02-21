@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useSharedWebSocket } from "../network/WebSocketProvider.tsx";
 import type { ServerMessage } from "../utilities/types.ts";
 import { ConnectionStatus } from "../components/ConnectionStatus.tsx";
+import { GameCanvas } from "../components/GameCanvas.tsx";
 
 export const PhoneClient = () => {
     const { connected, subscribe, send } = useSharedWebSocket();
@@ -84,7 +85,7 @@ export const PhoneClient = () => {
     const pointerDownEventListener = useCallback((e: PointerEvent) => {
         const canvas = canvasRef.current;
         if (!canvas) return;
-        
+
         const rect = canvas.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
@@ -124,11 +125,11 @@ export const PhoneClient = () => {
     if (joined) {
         return (
             <>
-                <div style={{ position: "absolute", width: "100%", pointerEvents: "none" }}>
+                <div style={{ position: "absolute", width: "100%", pointerEvents: "none", touchAction: "none", userSelect: "none" }} >
                     <ConnectionStatus />
                     <h3>Successfully joined room {roomCode.toUpperCase()} as {name} 🎉</h3>
                 </div>
-                <canvas ref={canvasRef} onContextMenu={(e) => e.preventDefault()}/>
+                <GameCanvas />
             </>
         );
     }
@@ -160,7 +161,7 @@ export const PhoneClient = () => {
                     </button>
                 </>
             ) : (
-                <canvas ref={canvasRef} />
+                <GameCanvas />
             )}
         </div>
     );
