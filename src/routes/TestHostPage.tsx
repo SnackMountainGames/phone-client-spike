@@ -30,6 +30,24 @@ export const TestHostPage = () => {
                 console.log("Message from phone:", message.text);
                 console.log("From:", message.from);
             }
+
+            if (message.type === "blobFromPhone") {
+                console.log("BLOB", message);
+                const byteCharacters = atob(message.data!);
+                const byteNumbers = new Array(byteCharacters.length);
+
+                for (let i = 0; i < byteCharacters.length; i++) {
+                    byteNumbers[i] = byteCharacters.charCodeAt(i);
+                }
+
+                const byteArray = new Uint8Array(byteNumbers);
+                const blob = new Blob([byteArray], { type: message.mimeType });
+
+                const imageUrl = URL.createObjectURL(blob);
+
+                // display it
+                document.getElementById("preview")!.setAttribute("src", imageUrl);
+            }
         });
 
         return unsubscribe;
@@ -64,6 +82,8 @@ export const TestHostPage = () => {
                             <li key={index}>{player.name}</li>
                         ))}
                     </ul>
+
+                    <img id="preview" style={{ maxWidth :300, display: "block", marginTop:10 }} />
                 </>
             )}
         </div>

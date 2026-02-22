@@ -5,6 +5,8 @@ export interface ServerMessage {
     players?: Player[];
     text?: string;
     from?: string;
+    mimeType?: string;
+    data?: string;
 }
 
 export interface Player {

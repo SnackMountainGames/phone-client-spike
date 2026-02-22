@@ -1,6 +1,6 @@
-import { useEffect, useRef, type PointerEvent, useCallback } from "react";
-import { isInsideBox } from "../game/ImageUtilities.ts";
-import { useGameStore } from "../state/GameState.ts";
+import { type PointerEvent, useCallback, useEffect, useRef } from "react";
+import { isInsideBox, loadImage } from "../game/ImageUtilities.ts";
+import { type GameState, useGameStore } from "../state/GameState.ts";
 import { useSharedWebSocket } from "../network/WebSocketProvider.tsx";
 
 export const GameCanvas = () => {
@@ -9,8 +9,9 @@ export const GameCanvas = () => {
     const { send } = useSharedWebSocket();
     const { score, increase } = useGameStore();
 
-    const gameStateRef = useRef({
+    const gameStateRef = useRef<GameState>({
         isPointerDown: false,
+        image: undefined,
         objects: [{
             x: 100,
             y: 100,
@@ -48,6 +49,10 @@ export const GameCanvas = () => {
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+        if (gameState.image) {
+            ctx.drawImage(gameState.image, 175, 200, 100, 100);
+        }
+
         ctx.lineWidth = 3;
 
         gameState.objects.forEach((object, index) => {
@@ -80,16 +85,27 @@ export const GameCanvas = () => {
         let animationId: number;
         let lastTime = 0;
 
-        const loop = (time: number) => {
-            const dt = (time - lastTime) / 1000; // convert ms → seconds
-            lastTime = time;
+        const init = async () => {
+            gameStateRef.current.image = await loadImage("./cow.png");
 
-            update(Math.min(dt, 0.1));
-            render(canvas, ctx);
+            startLoop();
+        }
+
+        const startLoop = () => {
+            const loop = (time: number) => {
+                const dt = (time - lastTime) / 1000; // convert ms → seconds
+                lastTime = time;
+
+                update(Math.min(dt, 0.1));
+                render(canvas, ctx);
+                animationId = requestAnimationFrame(loop);
+            }
+
+            // Begin game loop
             animationId = requestAnimationFrame(loop);
         }
 
-        animationId = requestAnimationFrame(loop);
+        init();
 
         return () => {
             cancelAnimationFrame(animationId);
@@ -127,7 +143,7 @@ export const GameCanvas = () => {
             onContextMenu={(e) => e.preventDefault()}
             style={{
                 touchAction: "none",
-                userSelect: "none"
+                userSelect: "none",
             }}
         />
     );

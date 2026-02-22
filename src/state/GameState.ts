@@ -1,5 +1,17 @@
 import { create } from "zustand";
 
+export type GameState = {
+    isPointerDown: boolean;
+    objects: GameObject[];
+    image?: HTMLImageElement;
+}
+
+export type GameObject = {
+    x: number;
+    y: number;
+    dy: number;
+}
+
 type GameStore = {
     score: number;
     increase: () => void;
