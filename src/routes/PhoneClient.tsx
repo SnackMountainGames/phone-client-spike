@@ -176,8 +176,6 @@ export const PhoneClient = () => {
                     "image/jpeg",
                     0.7 // compression quality
                 );
-
-                console.log(canvas);
             };
 
             reader.readAsDataURL(file);
@@ -198,7 +196,7 @@ export const PhoneClient = () => {
                     </h3>
 
                     <input type="file" id="fileInput" accept="image/*" style={{ pointerEvents: "all" }} onChange={onChange} />
-                    <img id="preview" style={{ maxWidth :300, display: "block", marginTop:10, pointerEvents: "all" }} />
+                    <img id="preview" style={{ maxWidth :300, display: "block", marginTop:10, pointerEvents: "all" }}  alt="user-image" />
                 </div>
                 <GameCanvas />
             </>
@@ -216,7 +214,7 @@ export const PhoneClient = () => {
                     <input
                         placeholder="Room Code"
                         value={roomCode}
-                        onChange={(e) => setRoomCode(e.target.value)}
+                        onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
                         style={{ display: "block", marginBottom: 10 }}
                     />
 

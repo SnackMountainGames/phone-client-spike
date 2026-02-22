@@ -3,13 +3,22 @@ import { create } from "zustand";
 export type GameState = {
     isPointerDown: boolean;
     objects: GameObject[];
+    pointerDownStart?: PointerObject;
     image?: HTMLImageElement;
 }
 
-export type GameObject = {
+type PointerObject = {
+    time: number;
     x: number;
     y: number;
+}
+
+type GameObject = {
+    x: number;
+    y: number;
+    dx: number;
     dy: number;
+    time?: number; // optional, number of seconds for this to live on screen
 }
 
 type GameStore = {
